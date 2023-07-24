@@ -1,6 +1,7 @@
 package com.elmoselhy.elmoselhymovieapp.data.repositories
 
 import com.elmoselhy.elmoselhymovieapp.data.apis.MovieApi
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class MoviesRepositoryImp @Inject constructor(private val movieApi: MovieApi) : MoviesRepository {
@@ -9,6 +10,6 @@ class MoviesRepositoryImp @Inject constructor(private val movieApi: MovieApi) : 
         apiKey: String,
         language: String?,
         page: Int
-    ) = movieApi.getMovies(movieCriteria, apiKey, language, page)
+    ) = flow { emit(movieApi.getMovies(movieCriteria, apiKey, language, page)) }
 
 }

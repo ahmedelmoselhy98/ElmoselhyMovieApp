@@ -6,6 +6,7 @@ import androidx.activity.viewModels
 import androidx.lifecycle.*
 import com.elmoselhy.elmoselhymovieapp.ui.viewmodels.MainViewModel
 import com.elmoselhy.elmoselhymovieapp.R
+import com.elmoselhy.elmoselhymovieapp.ui.viewmodels.NetworkState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -22,6 +23,17 @@ class MainActivity : AppCompatActivity() {
         coreMainViewModelScopedToThisViewModeStoreOwner.getMovies()
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                coreMainViewModelScopedToThisViewModeStoreOwner.uiState.collect{networkState->
+                    when(networkState){
+                        is NetworkState.Error -> {}
+                        NetworkState.Idle -> {}
+                        NetworkState.Loading -> {}
+                        NetworkState.StopLoading -> {}
+                        is NetworkState.Success<*> -> {
+                            networkState.data
+                        }
+                    }
+                }
 //                mainViewModelScopedToThisViewModeStoreOwner.uiState.collect {
 //                }
             }

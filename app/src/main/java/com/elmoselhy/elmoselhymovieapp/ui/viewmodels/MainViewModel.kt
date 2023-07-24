@@ -6,9 +6,7 @@ import com.elmoselhy.elmoselhymovieapp.BuildConfig
 import com.elmoselhy.elmoselhymovieapp.utilities.Constants
 import com.elmoselhy.elmoselhymovieapp.data.repositories.MoviesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,24 +18,29 @@ data class MainUiState(
     val imageUrl: String? = null,
 )
 
+sealed class NetworkState {
+    object Loading : NetworkState()
+    object StopLoading : NetworkState()
+    object Idle : NetworkState()
+    data class Success<T>(val data: T) : NetworkState()
+    data class Error(val throwable: Throwable) : NetworkState()
+}
+
+
 @HiltViewModel
 class MainViewModel @Inject constructor(private val moviesRepository: MoviesRepository) :
     ViewModel() {
 
     private val TAG = "MainViewModel"
-    private val _uiState = MutableStateFlow(MainUiState())
-    val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableSharedFlow<NetworkState>()
+    val uiState: SharedFlow<NetworkState> = _uiState.asSharedFlow()
 
     fun getMovies() {
         viewModelScope.launch {
-            try {
-                val movieResponse =
-                    moviesRepository.fetchMovies(Constants.popular, BuildConfig.API_KEY, "en", 1)
-                if (movieResponse.isSuccessful) {
-                    Log.d(TAG, movieResponse.body().toString())
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            val movieFlow =
+                moviesRepository.fetchMovies(Constants.popular, BuildConfig.API_KEY, "en", 1)
+            movieFlow.onStart { }.onCompletion { }.catch { }.collectLatest {
+                _uiState.emit(NetworkState.Success(it.body()?.results))
             }
         }
 //        _uiState.update { currentState ->

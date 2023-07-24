@@ -1,9 +1,9 @@
 package com.elmoselhy.elmoselhymovieapp.data.repositories
 
 import com.elmoselhy.elmoselhymovieapp.data.models.MoviesResponse
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import retrofit2.Response
-import retrofit2.http.Path
-import retrofit2.http.Query
 
 interface MoviesRepository {
     suspend fun fetchMovies(
@@ -11,5 +11,5 @@ interface MoviesRepository {
         apiKey: String,
         language: String?,
         page: Int
-    ):Response<MoviesResponse>
+    ) : Flow<Response<MoviesResponse>>
 }
